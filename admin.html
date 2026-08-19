@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>살림알파 | 관리자 & 클릭 통계 대시보드</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* Admin Dashboard Specific Styles */
+    body {
+      background-color: #f1f5f9;
+    }
+    .admin-container {
+      width: 100%;
+      max-width: 920px;
+      min-height: 100vh;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 28px 24px 60px 24px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.05);
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1.5px solid var(--border-light);
+      margin-bottom: 24px;
+    }
+    .admin-title-area h1 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .admin-title-area p {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      margin-top: 4px;
+    }
+    .btn-return-site {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-return-site:hover {
+      background: #334155;
+    }
+
+    /* KPI Cards Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: #f8fafc;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      position: relative;
+    }
+    .kpi-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .kpi-value {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+    }
+    .kpi-sub {
+      font-size: 0.74rem;
+      color: var(--accent-blue);
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    /* Section Cards */
+    .admin-card {
+      background: #ffffff;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+    }
+    .admin-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .admin-card-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Data Table */
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      text-align: left;
+    }
+    th {
+      background: #f8fafc;
+      color: var(--text-sub);
+      font-weight: 700;
+      padding: 12px 14px;
+      border-bottom: 1.5px solid var(--border-light);
+      white-space: nowrap;
+    }
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+    tr:hover {
+      background: #f8fafc;
+    }
+
+    /* Product Info Flex Cell (이미지 + 텍스트 정렬) */
+    .prod-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 250px;
+    }
+    .prod-thumb-mini {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+    .prod-title-text {
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.4;
+      word-break: keep-all;
+      font-size: 0.9rem;
+    }
+
+    .badge-rank {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-full);
+      font-size: 0.78rem;
+      font-weight: 900;
+      background: #e2e8f0;
+      color: var(--text-main);
+    }
+    .badge-rank-1 { background: #fef08a; color: #854d0e; }
+    .badge-rank-2 { background: #e2e8f0; color: #334155; }
+    .badge-rank-3 { background: #ffedd5; color: #9a3412; }
+
+    /* Coupang Button (줄바꿈 방지 & Flexbox) */
+    .btn-test-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: 0.78rem;
+      color: #ffffff;
+      background: var(--coupang-red);
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: background 0.15s ease;
+    }
+    .btn-test-link:hover {
+      background: #be123c;
+    }
+
+    .btn-action-small {
+      background: #ffffff;
+      border: 1px solid var(--border-light);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-sub);
+    }
+    .btn-action-small:hover {
+      background: #f1f5f9;
+      color: var(--text-main);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-container">
+
+    <!-- Admin Header -->
+    <header class="admin-header">
+      <div class="admin-title-area">
+        <h1>📊 살림알파 통계 대시보드</h1>
+        <p>영상 번호별 쿠팡 파트너스 실시간 클릭 수 및 전환 분석</p>
+      </div>
+      <a href="index.html" class="btn-return-site">
+        <span>⬅️ 인포링크 사이트 보기</span>
+      </a>
+    </header>
+
+    <!-- 1. KPI Summary Cards -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">👁️ 총 페이지 뷰 (PV)</div>
+        <div id="stat-total-views" class="kpi-value">0</div>
+        <div class="kpi-sub">프로필 링크 방문 횟수</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">🛒 총 쿠팡 클릭 수</div>
+        <div id="stat-total-clicks" class="kpi-value" style="color: var(--coupang-red);">0</div>
+        <div class="kpi-sub">제휴 링크 이동 횟수</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">⚡ 클릭 전환율 (CTR)</div>
+        <div id="stat-ctr" class="kpi-value" style="color: var(--accent-blue);">0%</div>
+        <div class="kpi-sub">방문자 대비 클릭 비율</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">🏆 클릭 1위 상품</div>
+        <div id="stat-top-item" class="kpi-value" style="font-size: 1.05rem; line-height: 1.35;">-</div>
+        <div id="stat-top-clicks" class="kpi-sub">-</div>
+      </div>
+    </section>
+
+    <!-- 2. Product Click Ranking Table -->
+    <section class="admin-card">
+      <div class="admin-card-header">
+        <div class="admin-card-title">
+          <span>🔥 상품 번호별 클릭 랭킹</span>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button id="btn-export-csv" class="btn-action-small">📥 CSV 다운로드</button>
+          <button id="btn-reset-stats" class="btn-action-small" style="color: #ef4444;">초기화</button>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 50px; text-align: center;">순위</th>
+              <th style="width: 65px; text-align: center;">번호</th>
+              <th style="min-width: 260px;">상품 정보</th>
+              <th style="width: 100px; text-align: center;">카테고리</th>
+              <th style="width: 90px; text-align: right;">클릭 수</th>
+              <th style="width: 85px; text-align: right;">클릭 비중</th>
+              <th style="width: 110px; text-align: center;">링크 테스트</th>
+            </tr>
+          </thead>
+          <tbody id="ranking-table-body">
+            <!-- Rendered by js/admin.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. Traffic Source Analysis (유입 채널 분석) -->
+    <section class="admin-card">
+      <div class="admin-card-header">
+        <div class="admin-card-title">
+          <span>🌐 유입 채널별 통계</span>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+        <div class="kpi-card" style="padding: 12px;">
+          <div class="kpi-label">🎵 틱톡 (TikTok)</div>
+          <div id="source-tiktok" class="kpi-value" style="font-size: 1.2rem;">0건</div>
+        </div>
+        <div class="kpi-card" style="padding: 12px;">
+          <div class="kpi-label">📸 인스타그램 (Reels)</div>
+          <div id="source-instagram" class="kpi-value" style="font-size: 1.2rem;">0건</div>
+        </div>
+        <div class="kpi-card" style="padding: 12px;">
+          <div class="kpi-label">🧵 스레드 (Threads)</div>
+          <div id="source-threads" class="kpi-value" style="font-size: 1.2rem;">0건</div>
+        </div>
+        <div class="kpi-card" style="padding: 12px;">
+          <div class="kpi-label">🔗 직접 접속 / 기타</div>
+          <div id="source-direct" class="kpi-value" style="font-size: 1.2rem;">0건</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/data-source.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

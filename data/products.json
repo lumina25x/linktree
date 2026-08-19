@@ -1,0 +1,66 @@
+[
+  {
+    "id": 14,
+    "title": "014. 자동 차량덮개 전동 햇빛차단 파라솔",
+    "price": "38,900원",
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=300&auto=format&fit=crop&q=80",
+    "affiliate_url": "https://link.coupang.com/a/sample14",
+    "created_at": "2026-08-20"
+  },
+  {
+    "id": 13,
+    "title": "013. 베이킹소다 행주티슈 80매 대용량 10팩",
+    "price": "14,800원",
+    "image_url": "https://images.unsplash.com/photo-1584992236310-6edddc08acff?w=300&auto=format&fit=crop&q=80",
+    "affiliate_url": "https://link.coupang.com/a/sample13",
+    "created_at": "2026-08-20"
+  },
+  {
+    "id": 12,
+    "title": "012. 창문 틈새 먼지 찌든때 싹쓸이 청소솔 3P",
+    "price": "8,900원",
+    "image_url": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300&auto=format&fit=crop&q=80",
+    "affiliate_url": "https://link.coupang.com/a/sample12",
+    "created_at": "2026-08-19"
+  },
+  {
+    "id": 11,
+    "title": "011. 싱크대 수전 폭포수 3단 회전 연장 노즐 헤드",
+    "price": "12,900원",
+    "image_url": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=300&auto=format&fit=crop&q=80",
+    "affiliate_url": "https://link.coupang.com/a/sample11",
+    "created_at": "2026-08-19"
+  },
+  {
+    "id": 10,
+    "title": "010. 초강력 압축 진공 음식물 쓰레기통 3L",
+    "price": "19,800원",
+    "image_url": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=300&auto=format&fit=crop&q=80",
+    "affiliate_url": "https://link.coupang.com/a/sample10",
+    "created_at": "2026-08-18"
+  },
+  {
+    "id": 9,
+    "title": "009. 3in1 접이식 맥세이프 무선 충전 거치대",
+    "price": "28,900원",
+    "image_url": "https://images.unsplash.com/photo-1586816879360-004f5b0c51e5?w=300&auto=format&fit=crop&q=80",
+    "affiliate_url": "https://link.coupang.com/a/sample09",
+    "created_at": "2026-08-18"
+  },
+  {
+    "id": 8,
+    "title": "008. 냉장고 자동 롤링 계란 보관함 2단 24구",
+    "price": "11,500원",
+    "image_url": "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=300&auto=format&fit=crop&q=80",
+    "affiliate_url": "https://link.coupang.com/a/sample08",
+    "created_at": "2026-08-17"
+  },
+  {
+    "id": 7,
+    "title": "007. 스마트 모션 센서 슬림 무선 LED 조명바",
+    "price": "13,500원",
+    "image_url": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=300&auto=format&fit=crop&q=80",
+    "affiliate_url": "https://link.coupang.com/a/sample07",
+    "created_at": "2026-08-17"
+  }
+]
