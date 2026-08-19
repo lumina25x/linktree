@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>살림알파 | 관리자 & 클릭 통계 대시보드</title>
+  <title>살림알파 | 관리자 & 설정 대시보드</title>
   <link rel="stylesheet" href="css/style.css" />
   <style>
     body {
@@ -23,9 +23,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 20px;
+      padding-bottom: 18px;
       border-bottom: 1.5px solid var(--border-light);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
     .admin-title-area h1 {
       font-size: 1.4rem;
@@ -56,6 +56,37 @@
     }
     .btn-return-site:hover {
       background: #334155;
+    }
+
+    /* Admin Tab Navigation */
+    .admin-tab-nav {
+      display: flex;
+      gap: 10px;
+      border-bottom: 2px solid var(--border-light);
+      margin-bottom: 24px;
+      padding-bottom: 2px;
+    }
+    .admin-tab-btn {
+      padding: 10px 20px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text-sub);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -4px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .admin-tab-btn:hover {
+      color: var(--text-main);
+    }
+    .admin-tab-btn.active {
+      color: #0f172a;
+      border-bottom-color: #0f172a;
     }
 
     /* KPI Cards Grid */
@@ -99,7 +130,7 @@
       background: #ffffff;
       border: 1px solid var(--border-light);
       border-radius: var(--radius-lg);
-      padding: 20px;
+      padding: 22px;
       margin-bottom: 24px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
     }
@@ -107,7 +138,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
     .admin-card-title {
       font-size: 1.1rem;
@@ -116,6 +147,73 @@
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    /* Settings Form Controls */
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+    .form-subtext {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 0.92rem;
+      font-family: inherit;
+      border: 1.5px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: #ffffff;
+    }
+    .form-input:focus, .form-textarea:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 600px) {
+      .form-row-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .btn-save-settings {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      height: 48px;
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 800;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-save-settings:hover {
+      background: #334155;
+      transform: translateY(-1px);
+    }
+    .btn-save-settings:active {
+      transform: scale(0.99);
     }
 
     /* Data Table */
@@ -306,7 +404,7 @@
     <div class="pin-auth-box">
       <div class="pin-icon">🔒</div>
       <h2 class="pin-title">관리자 인증</h2>
-      <p class="pin-desc">통계 대시보드 접근을 위해 PIN 번호를 입력하세요.</p>
+      <p class="pin-desc">대시보드 및 채널 관리를 위해 PIN 번호를 입력하세요.</p>
       <input type="password" id="pin-input" class="pin-input" maxlength="8" placeholder="••••" autocomplete="off" />
       <button id="btn-pin-submit" class="btn-pin-submit">대시보드 열기</button>
       <div id="pin-error" class="pin-error-msg">비밀번호가 일치하지 않습니다.</div>
@@ -318,8 +416,8 @@
     <!-- Admin Header -->
     <header class="admin-header">
       <div class="admin-title-area">
-        <h1>📊 살림알파 통계 대시보드</h1>
-        <p>영상 번호별 쿠팡 파트너스 실시간 클릭 수 및 전환 분석</p>
+        <h1>📊 살림알파 관리 센터</h1>
+        <p>영상 번호별 통계 분석 및 프로필·SNS 채널 설정</p>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
         <button id="btn-logout" class="btn-action-small">로그아웃</button>
@@ -329,89 +427,210 @@
       </div>
     </header>
 
-    <!-- 1. KPI Summary Cards -->
-    <section class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">👁️ 총 페이지 뷰 (PV)</div>
-        <div id="stat-total-views" class="kpi-value">0</div>
-        <div class="kpi-sub">프로필 링크 방문 횟수</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">🛒 총 쿠팡 클릭 수</div>
-        <div id="stat-total-clicks" class="kpi-value" style="color: var(--coupang-red);">0</div>
-        <div class="kpi-sub">제휴 링크 이동 횟수</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">⚡ 클릭 전환율 (CTR)</div>
-        <div id="stat-ctr" class="kpi-value" style="color: var(--accent-blue);">0%</div>
-        <div class="kpi-sub">방문자 대비 클릭 비율</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">🏆 클릭 1위 상품</div>
-        <div id="stat-top-item" class="kpi-value" style="font-size: 1.05rem; line-height: 1.35;">-</div>
-        <div id="stat-top-clicks" class="kpi-sub">-</div>
-      </div>
-    </section>
+    <!-- Tab Navigation -->
+    <nav class="admin-tab-nav">
+      <button id="tab-btn-stats" class="admin-tab-btn active">
+        <span>📊 실시간 클릭 통계</span>
+      </button>
+      <button id="tab-btn-settings" class="admin-tab-btn">
+        <span>⚙️ 프로필 & 채널 정보 설정</span>
+      </button>
+    </nav>
 
-    <!-- 2. Product Click Ranking Table -->
-    <section class="admin-card">
-      <div class="admin-card-header">
-        <div class="admin-card-title">
-          <span>🔥 상품 번호별 클릭 랭킹</span>
+    <!-- ==========================================================================
+         TAB 1: 실시간 클릭 통계
+         ========================================================================== -->
+    <div id="tab-content-stats">
+      <!-- 1. KPI Summary Cards -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">👁️ 총 페이지 뷰 (PV)</div>
+          <div id="stat-total-views" class="kpi-value">0</div>
+          <div class="kpi-sub">프로필 링크 방문 횟수</div>
         </div>
-        <div style="display: flex; gap: 8px;">
-          <button id="btn-export-csv" class="btn-action-small">📥 CSV 다운로드</button>
-          <button id="btn-reset-stats" class="btn-action-small" style="color: #ef4444;">초기화</button>
+        <div class="kpi-card">
+          <div class="kpi-label">🛒 총 쿠팡 클릭 수</div>
+          <div id="stat-total-clicks" class="kpi-value" style="color: var(--coupang-red);">0</div>
+          <div class="kpi-sub">제휴 링크 이동 횟수</div>
         </div>
-      </div>
+        <div class="kpi-card">
+          <div class="kpi-label">⚡ 클릭 전환율 (CTR)</div>
+          <div id="stat-ctr" class="kpi-value" style="color: var(--accent-blue);">0%</div>
+          <div class="kpi-sub">방문자 대비 클릭 비율</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">🏆 클릭 1위 상품</div>
+          <div id="stat-top-item" class="kpi-value" style="font-size: 1.05rem; line-height: 1.35;">-</div>
+          <div id="stat-top-clicks" class="kpi-sub">-</div>
+        </div>
+      </section>
 
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 50px; text-align: center;">순위</th>
-              <th style="width: 65px; text-align: center;">번호</th>
-              <th style="min-width: 260px;">상품 정보</th>
-              <th style="width: 90px; text-align: right;">클릭 수</th>
-              <th style="width: 85px; text-align: right;">클릭 비중</th>
-              <th style="width: 110px; text-align: center;">링크 테스트</th>
-            </tr>
-          </thead>
-          <tbody id="ranking-table-body">
-            <!-- Rendered by js/admin.js -->
-          </tbody>
-        </table>
-      </div>
-    </section>
+      <!-- 2. Product Click Ranking Table -->
+      <section class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <span>🔥 상품 번호별 클릭 랭킹</span>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button id="btn-export-csv" class="btn-action-small">📥 CSV 다운로드</button>
+            <button id="btn-reset-stats" class="btn-action-small" style="color: #ef4444;">초기화</button>
+          </div>
+        </div>
 
-    <!-- 3. Traffic Source Analysis (유입 채널 분석) -->
-    <section class="admin-card">
-      <div class="admin-card-header">
-        <div class="admin-card-title">
-          <span>🌐 유입 채널별 통계</span>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 50px; text-align: center;">순위</th>
+                <th style="width: 65px; text-align: center;">번호</th>
+                <th style="min-width: 260px;">상품 정보</th>
+                <th style="width: 90px; text-align: right;">클릭 수</th>
+                <th style="width: 85px; text-align: right;">클릭 비중</th>
+                <th style="width: 110px; text-align: center;">링크 테스트</th>
+              </tr>
+            </thead>
+            <tbody id="ranking-table-body">
+              <!-- Rendered by js/admin.js -->
+            </tbody>
+          </table>
         </div>
-      </div>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
-        <div class="kpi-card" style="padding: 12px;">
-          <div class="kpi-label">🎵 틱톡 (TikTok)</div>
-          <div id="source-tiktok" class="kpi-value" style="font-size: 1.2rem;">0건</div>
+      </section>
+
+      <!-- 3. Traffic Source Analysis -->
+      <section class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-title">
+            <span>🌐 유입 채널별 통계</span>
+          </div>
         </div>
-        <div class="kpi-card" style="padding: 12px;">
-          <div class="kpi-label">📸 인스타그램 (Reels)</div>
-          <div id="source-instagram" class="kpi-value" style="font-size: 1.2rem;">0건</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
+          <div class="kpi-card" style="padding: 12px;">
+            <div class="kpi-label">🎵 틱톡 (TikTok)</div>
+            <div id="source-tiktok" class="kpi-value" style="font-size: 1.2rem;">0건</div>
+          </div>
+          <div class="kpi-card" style="padding: 12px;">
+            <div class="kpi-label">📸 인스타그램 (Reels)</div>
+            <div id="source-instagram" class="kpi-value" style="font-size: 1.2rem;">0건</div>
+          </div>
+          <div class="kpi-card" style="padding: 12px;">
+            <div class="kpi-label">🧵 스레드 (Threads)</div>
+            <div id="source-threads" class="kpi-value" style="font-size: 1.2rem;">0건</div>
+          </div>
+          <div class="kpi-card" style="padding: 12px;">
+            <div class="kpi-label">🔗 직접 접속 / 기타</div>
+            <div id="source-direct" class="kpi-value" style="font-size: 1.2rem;">0건</div>
+          </div>
         </div>
-        <div class="kpi-card" style="padding: 12px;">
-          <div class="kpi-label">🧵 스레드 (Threads)</div>
-          <div id="source-threads" class="kpi-value" style="font-size: 1.2rem;">0건</div>
+      </section>
+    </div>
+
+    <!-- ==========================================================================
+         TAB 2: 프로필 & 채널 정보 설정
+         ========================================================================== -->
+    <div id="tab-content-settings" style="display: none;">
+      <form id="settings-form">
+        
+        <!-- 1. 기본 프로필 정보 -->
+        <section class="admin-card">
+          <div class="admin-card-title" style="margin-bottom: 16px;">
+            <span>👤 기본 프로필 설정</span>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="setting-channel-name">채널 이름</label>
+              <input type="text" id="setting-channel-name" class="form-input" placeholder="예: 살림알파" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="setting-channel-handle">핸들 / 아이디</label>
+              <input type="text" id="setting-channel-handle" class="form-input" placeholder="예: @salim_alpha" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-channel-tagline">한 줄 소개 문구</label>
+            <input type="text" id="setting-channel-tagline" class="form-input" placeholder="예: 삶의 질을 높여주는 살림 꿀템 모음 💛" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-channel-avatar">프로필 이미지 URL</label>
+            <div class="form-subtext">온라인 이미지 링크(https://...)를 입력하세요.</div>
+            <input type="url" id="setting-channel-avatar" class="form-input" placeholder="https://..." />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-business-email">✉️ 비즈니스 제안 문의 이메일</label>
+            <div class="form-subtext">비워두실 경우 상단 '비즈니스 제안' 버튼이 숨겨집니다.</div>
+            <input type="email" id="setting-business-email" class="form-input" placeholder="예: contact@example.com" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-top-notice">📢 상단 공정위 / 안내 문구</label>
+            <textarea id="setting-top-notice" class="form-textarea" rows="2" placeholder="쿠팡 파트너스 활동의 일환으로..."></textarea>
+          </div>
+        </section>
+
+        <!-- 2. SNS 채널 주소 설정 -->
+        <section class="admin-card">
+          <div class="admin-card-title" style="margin-bottom: 16px;">
+            <span>🌐 SNS 채널 링크 설정</span>
+          </div>
+          <div class="form-subtext" style="margin-bottom: 14px;">주소를 비워두시면 해당 아이콘은 웹사이트에서 자동으로 숨겨집니다.</div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="setting-social-tiktok">🎵 틱톡(TikTok) 링크</label>
+              <input type="url" id="setting-social-tiktok" class="form-input" placeholder="https://www.tiktok.com/@내아이디" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="setting-social-instagram">📸 인스타그램(Instagram) 링크</label>
+              <input type="url" id="setting-social-instagram" class="form-input" placeholder="https://www.instagram.com/내아이디" />
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="setting-social-threads">🧵 스레드(Threads) 링크</label>
+              <input type="url" id="setting-social-threads" class="form-input" placeholder="https://www.threads.net/@내아이디" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="setting-social-youtube">▶️ 유튜브(YouTube) 링크</label>
+              <input type="url" id="setting-social-youtube" class="form-input" placeholder="https://www.youtube.com/@내채널" />
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. 구글 시트 및 보안 PIN 설정 -->
+        <section class="admin-card">
+          <div class="admin-card-title" style="margin-bottom: 16px;">
+            <span>🔐 데이터 및 보안 설정</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-sheet-url">📊 구글 스프레드시트 CSV 웹 게시 URL</label>
+            <input type="url" id="setting-sheet-url" class="form-input" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" />
+          </div>
+
+          <div class="form-group" style="max-width: 260px;">
+            <label class="form-label" for="setting-admin-pin">🔒 관리자 접속 PIN 비밀번호</label>
+            <div class="form-subtext">대시보드 잠금 해제에 사용할 번호</div>
+            <input type="text" id="setting-admin-pin" class="form-input" maxlength="8" placeholder="예: 7788" required />
+          </div>
+        </section>
+
+        <!-- 저장 버튼 -->
+        <div style="margin-top: 20px; display: flex; gap: 12px;">
+          <button type="submit" class="btn-save-settings">
+            <span>💾 설정 저장하기 (사이트에 즉시 적용)</span>
+          </button>
         </div>
-        <div class="kpi-card" style="padding: 12px;">
-          <div class="kpi-label">🔗 직접 접속 / 기타</div>
-          <div id="source-direct" class="kpi-value" style="font-size: 1.2rem;">0건</div>
-        </div>
-      </div>
-    </section>
+      </form>
+    </div>
 
   </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast-msg">설정이 저장되었습니다.</div>
 
   <!-- Scripts -->
   <script src="js/config.js"></script>
