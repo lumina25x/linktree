@@ -1,10 +1,20 @@
 /**
- * [Infolink Admin Analytics Logic]
- * 방문자 수, 번호별 쿠팡 클릭 수, 유입 경로 실시간 통계 집계
+ * [Infolink Admin Analytics Logic - PIN 보안 인증 탑재]
+ * PIN 인증 후 방문자 수, 번호별 쿠팡 클릭 수, 유입 경로 실시간 통계 집계
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
   const dataSource = new DataSourceManager(CONFIG);
+  
+  // Auth Elements
+  const pinModal = document.getElementById("pin-modal");
+  const pinInput = document.getElementById("pin-input");
+  const btnPinSubmit = document.getElementById("btn-pin-submit");
+  const pinError = document.getElementById("pin-error");
+  const adminContent = document.getElementById("admin-content");
+  const btnLogout = document.getElementById("btn-logout");
+
+  // Dashboard Elements
   const statTotalViews = document.getElementById("stat-total-views");
   const statTotalClicks = document.getElementById("stat-total-clicks");
   const statCtr = document.getElementById("stat-ctr");
@@ -19,27 +29,57 @@ document.addEventListener("DOMContentLoaded", async () => {
   const sourceThreads = document.getElementById("source-threads");
   const sourceDirect = document.getElementById("source-direct");
 
+  // 1. PIN 보안 인증 확인
+  function checkAuth() {
+    const isAuth = sessionStorage.getItem("salim_admin_auth") === "true";
+    if (isAuth) {
+      pinModal.style.display = "none";
+      adminContent.style.display = "block";
+      renderDashboard();
+    } else {
+      pinModal.style.display = "flex";
+      adminContent.style.display = "none";
+      pinInput.focus();
+    }
+  }
+
+  function handlePinSubmit() {
+    const enteredPin = pinInput.value.trim();
+    const correctPin = (CONFIG.admin && CONFIG.admin.pin) ? String(CONFIG.admin.pin) : "7788";
+
+    if (enteredPin === correctPin) {
+      sessionStorage.setItem("salim_admin_auth", "true");
+      pinError.style.display = "none";
+      pinModal.style.display = "none";
+      adminContent.style.display = "block";
+      renderDashboard();
+    } else {
+      pinError.style.display = "block";
+      pinInput.value = "";
+      pinInput.focus();
+    }
+  }
+
+  btnPinSubmit.addEventListener("click", handlePinSubmit);
+  pinInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") handlePinSubmit();
+  });
+
+  if (btnLogout) {
+    btnLogout.addEventListener("click", () => {
+      sessionStorage.removeItem("salim_admin_auth");
+      window.location.reload();
+    });
+  }
+
+  // 2. 통계 데이터 로드
   function getStatsData() {
     const raw = localStorage.getItem("infolink_analytics");
     if (!raw) {
       return {
-        views: 124,
-        clicks: {
-          14: 38,
-          13: 25,
-          12: 19,
-          11: 14,
-          10: 12,
-          9: 8,
-          8: 5,
-          7: 3
-        },
-        sources: {
-          tiktok: 52,
-          instagram: 46,
-          threads: 18,
-          direct: 8
-        }
+        views: 0,
+        clicks: {},
+        sources: { tiktok: 0, instagram: 0, threads: 0, direct: 0 }
       };
     }
     return JSON.parse(raw);
@@ -49,6 +89,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     localStorage.setItem("infolink_analytics", JSON.stringify(data));
   }
 
+  // 3. 대시보드 렌더링
   async function renderDashboard() {
     const stats = getStatsData();
     const products = await dataSource.fetchProducts();
@@ -88,6 +129,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       statTopClicks.textContent = "-";
     }
 
+    if (rankedProducts.length === 0) {
+      rankingTableBody.innerHTML = `
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+            구글 시트에 등록된 상품이 없습니다. 시트에 상품을 추가해 보세요!
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
     rankingTableBody.innerHTML = rankedProducts
       .map((p, idx) => {
         let rankBadgeClass = "badge-rank";
@@ -109,9 +161,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                 />
                 <span class="prod-title-text">${escapeHtml(p.title)}</span>
               </div>
-            </td>
-            <td style="text-align: center; white-space: nowrap;">
-              <span class="row-category-tag" style="font-size: 0.75rem; padding: 3px 8px; display: inline-block;">${escapeHtml(p.category || "-")}</span>
             </td>
             <td style="text-align: right; font-weight: 800; color: var(--coupang-red); white-space: nowrap;">${p.clicks.toLocaleString()}회</td>
             <td style="text-align: right; color: var(--text-sub); white-space: nowrap;">${p.share}%</td>
@@ -144,14 +193,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const stats = getStatsData();
     const products = await dataSource.fetchProducts();
 
-    let csvContent = "\uFEFF순위,상품번호,상품명,카테고리,클릭수,쿠팡링크\n";
+    let csvContent = "\uFEFF순위,상품번호,상품명,클릭수,쿠팡링크\n";
     const rankedProducts = products.map((p) => ({
       ...p,
       clicks: stats.clicks?.[p.id] || 0
     })).sort((a, b) => b.clicks - a.clicks);
 
     rankedProducts.forEach((p, idx) => {
-      csvContent += `"${idx + 1}","${p.id}","${p.title.replace(/"/g, '""')}","${p.category}","${p.clicks}","${p.affiliate_url}"\n`;
+      csvContent += `"${idx + 1}","${p.id}","${p.title.replace(/"/g, '""')}","${p.clicks}","${p.affiliate_url}"\n`;
     });
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -167,5 +216,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
-  renderDashboard();
+  // 실행
+  checkAuth();
 });

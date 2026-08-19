@@ -1,6 +1,6 @@
 /**
  * [채널 및 데이터 소스 설정 파일]
- * 사용자 채널 정보와 구글 스프레드시트 연동 정보를 설정합니다.
+ * 사용자 채널 정보, 구글 시트 연동, 관리자 보안 PIN 설정
  */
 const CONFIG = {
   // 1. 채널 프로필 정보
@@ -21,14 +21,19 @@ const CONFIG = {
     }
   },
 
-  // 2. 데이터 연동 모드 ('google_sheets' | 'local_json')
+  // 2. 관리자 보안 설정 (대시보드 접속 PIN 번호)
+  admin: {
+    pin: "7788" // 원하는 관리자 비밀번호 (변경 가능)
+  },
+
+  // 3. 데이터 연동 모드
   dataSource: {
     mode: "google_sheets", 
     googleSheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpvXQdFacfYtXR2MEsZ5eIVdsx0rtwOIX5SJzps_61qnkaRSxE85Q_IWj4grLlBLPbDCcaQL7cdm97/pub?gid=0&single=true&output=csv",
     apiEndpointUrl: ""
   },
 
-  // 3. UI 및 테마 설정
+  // 4. UI 설정
   ui: {
     theme: "light",
     defaultSort: "newest",

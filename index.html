@@ -18,16 +18,11 @@
   <!-- Main Mobile-Optimized Application Container -->
   <div class="app-container">
 
-    <!-- 1. Top Utility Action Bar (Business, Admin & Share) -->
+    <!-- 1. Top Utility Action Bar (비즈니스 문의 & 공유하기) -->
     <div class="top-action-bar">
-      <div style="display: flex; gap: 8px; align-items: center;">
-        <a id="btn-business" href="mailto:salim_alpha@gmail.com" class="btn-business" title="비즈니스 문의">
-          <span>✉️ 비즈니스 제안</span>
-        </a>
-        <a href="admin.html" class="btn-business" title="실시간 클릭 통계 대시보드" style="color: var(--accent-blue);">
-          <span>📊 통계 대시보드</span>
-        </a>
-      </div>
+      <a id="btn-business" href="mailto:salim_alpha@gmail.com" class="btn-business" title="비즈니스 문의">
+        <span>✉️ 비즈니스 제안</span>
+      </a>
       <button id="btn-share" class="btn-share" title="링크 공유하기" aria-label="Share">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <circle cx="18" cy="5" r="3"></circle>
@@ -39,10 +34,10 @@
       </button>
     </div>
 
-    <!-- 2. Channel Profile & Header -->
+    <!-- 2. Channel Profile & Header (아바타 3회 터치 시 관리자 진입 히든 트리거) -->
     <header class="header-section">
       <div class="avatar-wrapper">
-        <img id="channel-avatar" class="avatar-img" src="" alt="Profile Avatar" />
+        <img id="channel-avatar" class="avatar-img" src="" alt="Profile Avatar" style="cursor: pointer;" title="살림알파" />
       </div>
       <div>
         <div class="channel-title-row">
@@ -110,13 +105,8 @@
       </div>
     </main>
 
-    <!-- 6. Footer -->
+    <!-- 6. Footer (관리자 링크 완전 제거) -->
     <footer class="footer-section">
-      <div style="margin-bottom: 8px;">
-        <a href="admin.html" style="font-size: 0.76rem; color: var(--text-sub); text-decoration: none; font-weight: 600;">
-          📊 관리자 클릭 통계 페이지 이동 ❯
-        </a>
-      </div>
       <p class="copyright-text">
         © <span id="current-year">2026</span> 살림알파. All rights reserved.
       </p>

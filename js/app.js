@@ -67,6 +67,22 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     renderSocials();
     btnShare.addEventListener("click", handleShare);
+
+    // [히든 관리자 진입 트릭]: 프로필 사진 3회 연속 클릭 시 관리자 페이지로 이동
+    let avatarClicks = 0;
+    let clickTimer = null;
+    channelAvatar.addEventListener("click", () => {
+      avatarClicks++;
+      clearTimeout(clickTimer);
+      if (avatarClicks >= 3) {
+        avatarClicks = 0;
+        window.location.href = "admin.html";
+      } else {
+        clickTimer = setTimeout(() => {
+          avatarClicks = 0;
+        }, 1200);
+      }
+    });
   }
 
   function renderSocials() {
@@ -111,7 +127,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // 3. 상품 컴팩트 리스트 렌더링 (상품명 + 가격 + 썸네일)
+  // 3. 상품 컴팩트 리스트 렌더링
   function renderProducts() {
     let filtered = allProducts.filter((product) => {
       const query = searchQuery.trim().toLowerCase();
@@ -172,7 +188,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         id="item-${p.id}"
         onclick="trackClick(${p.id}, '${escapeHtml(p.title)}')"
       >
-        <!-- 좌측 썸네일 -->
         <div class="row-thumb-wrapper">
           <img 
             class="row-thumb-img" 
@@ -182,14 +197,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=300&auto=format&fit=crop&q=80';"
           />
         </div>
-
-        <!-- 중앙 정보 영역 (상품명 + 가격) -->
         <div class="row-info-area">
           <h2 class="row-title">${escapeHtml(p.title)}</h2>
           ${priceHtml}
         </div>
-
-        <!-- 우측 바로가기 화살표 -->
         <div class="row-action-area">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="9 18 15 12 9 6"></polyline>
