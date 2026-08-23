@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>살림알파 | SNS 영상 속 살림 꿀템 모음</title>
+  <!-- 아래 <title> 과 og:title 은 SNS 크롤러가 읽는 값이라 JS로 바꿔도 미리보기에는 반영되지 않는다.
+       채널명을 미리보기에 넣고 싶으면 이 두 줄을 직접 수정할 것. (브라우저 탭 제목은 app.js가 실시간 갱신) -->
+  <title>영상 속 꿀템 최저가 모음</title>
   <meta name="description" content="틱톡, 릴스, 스레드 영상 속 화제의 살림 꿀템 번호별 최저가 링크 모음" />
 
   <!-- Open Graph / SNS Preview -->
-  <meta property="og:title" content="살림알파 | 영상 속 살림 꿀템 모음" />
+  <meta property="og:title" content="영상 속 꿀템 최저가 모음" />
   <meta property="og:description" content="영상에서 보신 번호를 검색하시면 바로 최저가 링크로 연결됩니다." />
   <meta property="og:type" content="website" />
 
@@ -37,13 +39,13 @@
     <!-- 2. Channel Profile & Header (아바타 3회 터치 시 관리자 진입 히든 트리거) -->
     <header class="header-section">
       <div class="avatar-wrapper">
-        <img id="channel-avatar" class="avatar-img" src="" alt="Profile Avatar" style="cursor: pointer;" title="살림알파" />
+        <img id="channel-avatar" class="avatar-img" src="" alt="Profile Avatar" style="cursor: pointer;" />
       </div>
       <div>
         <div class="channel-title-row">
-          <h1 id="channel-title" class="channel-title">살림알파</h1>
+          <h1 id="channel-title" class="channel-title"></h1>
         </div>
-        <p id="channel-tagline" class="channel-tagline">삶의 질을 높여주는 살림 꿀템 모음 💛</p>
+        <p id="channel-tagline" class="channel-tagline"></p>
       </div>
 
       <!-- Social Media Icons (TikTok, Instagram, Threads, YouTube) -->
@@ -107,9 +109,7 @@
 
     <!-- 6. Footer (관리자 링크 완전 제거) -->
     <footer class="footer-section">
-      <p class="copyright-text">
-        © <span id="current-year">2026</span> 살림알파. All rights reserved.
-      </p>
+      <p id="copyright-text" class="copyright-text">© All rights reserved.</p>
     </footer>
 
   </div>

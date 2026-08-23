@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const productsContainer = document.getElementById("products-container");
   const productCountSpan = document.getElementById("product-count");
   const emptyState = document.getElementById("empty-state");
+  const copyrightText = document.getElementById("copyright-text");
   const toast = document.getElementById("toast");
 
   // 1. 유입 채널 & 방문자 통계 실시간 집계
@@ -72,11 +73,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // 2. 프로필 & 채널 정보 초기화
   function initProfile() {
+    const channelName = activeConfig.channel.name || "";
+    const tagline = activeConfig.channel.tagline || "";
+
     channelAvatar.src = activeConfig.channel.avatar;
-    channelTitle.textContent = activeConfig.channel.name;
-    channelTagline.textContent = activeConfig.channel.tagline;
+    channelAvatar.title = channelName;
+    channelTitle.textContent = channelName;
+    channelTagline.textContent = tagline;
     topNoticeText.textContent = activeConfig.ui.topNoticeText;
     searchInput.placeholder = activeConfig.ui.searchPlaceholder;
+
+    // 탭 제목과 푸터 카피라이트도 채널명 설정을 따라간다.
+    // (og:title 은 크롤러가 JS 없이 읽으므로 index.html 쪽 정적 값이 따로 쓰인다)
+    document.title = tagline ? `${channelName} | ${tagline}` : channelName;
+    if (copyrightText) {
+      const year = new Date().getFullYear();
+      copyrightText.textContent = channelName
+        ? `© ${year} ${channelName}. All rights reserved.`
+        : `© ${year}. All rights reserved.`;
+    }
 
     if (activeConfig.channel.businessEmail) {
       btnBusiness.href = `mailto:${activeConfig.channel.businessEmail}?subject=[비즈니스 제안] ${activeConfig.channel.name} 제휴 문의`;

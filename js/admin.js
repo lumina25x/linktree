@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btnPinSubmit = document.getElementById("btn-pin-submit");
   const pinError = document.getElementById("pin-error");
   const adminContent = document.getElementById("admin-content");
+  const adminTitle = document.getElementById("admin-title");
   const btnLogout = document.getElementById("btn-logout");
 
   // Tab Elements
@@ -72,6 +73,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const settingSocialYoutube = document.getElementById("setting-social-youtube");
   const settingSheetUrl = document.getElementById("setting-sheet-url");
   const settingAdminPin = document.getElementById("setting-admin-pin");
+
+  // 0. 채널명 반영: 탭 제목과 대시보드 상단 제목이 설정을 따라간다
+  function applyBranding() {
+    const channelName = (activeConfig.channel && activeConfig.channel.name) || "";
+    document.title = channelName ? `${channelName} | 관리자 & 설정 대시보드` : "관리자 & 설정 대시보드";
+    if (adminTitle) {
+      adminTitle.textContent = channelName ? `📊 ${channelName} 관리 센터` : "📊 관리 센터";
+    }
+  }
 
   // 1. PIN 보안 인증 확인
   function checkAuth() {
@@ -199,6 +209,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     localStorage.setItem("infolink_custom_config", JSON.stringify(updated));
     activeConfig = getEffectiveConfig();
+    applyBranding();
 
     showToast("💾 설정이 성공적으로 저장되었습니다! 메인 사이트에 즉시 반영됩니다.");
   });
@@ -333,7 +344,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `살림알파_클릭통계_${new Date().toISOString().split("T")[0]}.csv`;
+    const channelName = ((activeConfig.channel && activeConfig.channel.name) || "인포링크")
+      .replace(/[\/:*?"<>|]/g, "")
+      .trim() || "인포링크";
+    link.download = `${channelName}_클릭통계_${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
   });
 
@@ -348,5 +362,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  applyBranding();
   checkAuth();
 });
