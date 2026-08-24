@@ -35,7 +35,7 @@
 var TOKEN = 'CHANGE-ME-TO-A-LONG-RANDOM-STRING';
 
 // 상품이 쌓이는 시트 탭 이름. 클라이언트가 sheet 를 보내면 그쪽이 우선한다.
-var DEFAULT_SHEET_NAME = 'Sheet1';
+var DEFAULT_SHEET_NAME = 'YUK_A';
 
 // 번호를 몇 자리로 채울지. '014. 상품명' / '#014' 형태를 만든다.
 // (사이트 검색창 안내문이 "영상 번호(예: 014)" 라서 3자리에 맞춘다)
