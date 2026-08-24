@@ -10,7 +10,8 @@ const CONFIG = {
     name: "살림알파",
     handle: "@salim_alpha",
     tagline: "삶의 질을 높여주는 살림 꿀템 모음 💛",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+    // 페이지에 정적으로 박혀 있는 파일과 같은 값이라, JS 가 덮어써도 다시 받지 않는다.
+    avatar: "avatar.jpg",
     badge: "공식 파트너스",
     businessEmail: "salim_alpha@gmail.com",
     

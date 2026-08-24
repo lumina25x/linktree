@@ -60,7 +60,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const channelName = activeConfig.channel.name || "";
     const tagline = activeConfig.channel.tagline || "";
 
-    channelAvatar.src = activeConfig.channel.avatar;
+    // 아바타는 index.html 에 정적으로 박혀 있어 HTML 파싱 단계에서 이미 받기 시작한다.
+    // 시트나 config 에 다른 주소가 있을 때만 바꾼다. 빈 값으로 덮어써서 이미지가
+    // 사라지는 일이 없도록 값이 있는지 먼저 본다.
+    if (activeConfig.channel.avatar) {
+      channelAvatar.src = activeConfig.channel.avatar;
+    }
     channelAvatar.title = channelName;
     channelTitle.textContent = channelName;
     channelTagline.textContent = tagline;
