@@ -65,7 +65,7 @@ const CONFIG = {
 
 ## 🌐 배포 (Vercel)
 
-**배포 주소: https://linktree-abgc.vercel.app**
+**배포 주소: https://link-yukaphapha.vercel.app**
 
 이 저장소는 **Vercel에 연결되어 있습니다.** 빌드 설정이 필요 없는 정적 사이트라,
 `main` 브랜치에 push하면 Vercel이 자동으로 재배포합니다.

@@ -3,15 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <!-- 아래 <title> 과 og:title 은 SNS 크롤러가 읽는 값이라 JS로 바꿔도 미리보기에는 반영되지 않는다.
-       채널명을 미리보기에 넣고 싶으면 이 두 줄을 직접 수정할 것. (브라우저 탭 제목은 app.js가 실시간 갱신) -->
-  <title>영상 속 꿀템 최저가 모음</title>
-  <meta name="description" content="틱톡, 릴스, 스레드 영상 속 화제의 살림 꿀템 번호별 최저가 링크 모음" />
+  <!-- 아래 메타 태그들은 SNS 크롤러가 JS 없이 읽는 값이라 시트 설정을 따라가지 못한다.
+       채널명을 바꾸면 이 블록도 같이 고쳐야 카톡/인스타 미리보기에 반영된다.
+       (브라우저 탭 제목은 app.js 가 시트 값으로 실시간 갱신한다) -->
+  <title>육아파파 | 영상 속 꿀템 최저가 모음</title>
+  <meta name="description" content="육아하는 아빠가 소개하는 꿀템. 틱톡·릴스·스레드 영상 속 번호별 최저가 링크 모음" />
 
   <!-- Open Graph / SNS Preview -->
-  <meta property="og:title" content="영상 속 꿀템 최저가 모음" />
+  <meta property="og:title" content="육아파파 | 영상 속 꿀템 최저가 모음" />
   <meta property="og:description" content="영상에서 보신 번호를 검색하시면 바로 최저가 링크로 연결됩니다." />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://link-yukaphapha.vercel.app/" />
+  <meta property="og:image" content="https://link-yukaphapha.vercel.app/og-image.jpg" />
 
   <link rel="stylesheet" href="css/style.css" />
 </head>
