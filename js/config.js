@@ -38,7 +38,7 @@ const CONFIG = {
     // 위 상품 주소에서 gid 만 설정 탭의 값으로 바꾼 것이다.
     // gid 는 Apps Script 편집기에서 설정시트준비() 를 실행하면 로그에 찍힌다.
     // 비워두면 아래 channel 기본값만 쓰인다.
-    settingsCsvUrl: "",
+    settingsCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpvXQdFacfYtXR2MEsZ5eIVdsx0rtwOIX5SJzps_61qnkaRSxE85Q_IWj4grLlBLPbDCcaQL7cdm97/pub?gid=523731436&single=true&output=csv",
 
     apiEndpointUrl: ""
   },
