@@ -1,33 +1,17 @@
 /**
  * [Infolink Application Main Logic - Ultra Clean Inpocklink Style]
- * 관리자 설정(localStorage) 실시간 연동, 상품명·가격·썸네일 렌더링 및 번호 검색 엔진
+ * 구글 시트 설정 연동, 상품명·가격·썸네일 렌더링 및 번호 검색 엔진
+ *
+ * 채널 설정의 우선순위는 js/settings.js 에 정리돼 있다.
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // Config Manager Helper: 관리자가 저장한 커스텀 설정 우선 적용
-  function getEffectiveConfig() {
-    const custom = localStorage.getItem("infolink_custom_config");
-    if (custom) {
-      try {
-        const parsed = JSON.parse(custom);
-        return {
-          ...CONFIG,
-          ...parsed,
-          channel: { ...CONFIG.channel, ...(parsed.channel || {}) },
-          admin: { ...CONFIG.admin, ...(parsed.admin || {}) },
-          dataSource: { ...CONFIG.dataSource, ...(parsed.dataSource || {}) },
-          ui: { ...CONFIG.ui, ...(parsed.ui || {}) }
-        };
-      } catch (e) {}
-    }
-    return CONFIG;
-  }
-
-  const activeConfig = getEffectiveConfig();
-  const dataSource = new DataSourceManager(activeConfig);
+  // 시트를 읽어오기 전 임시값. 아래 시작 블록에서 시트 값으로 다시 만든다.
+  let activeConfig = CONFIG;
+  const dataSource = new DataSourceManager(CONFIG);
   let allProducts = [];
   let searchQuery = "";
-  let currentSort = activeConfig.ui.defaultSort || "newest";
+  let currentSort = CONFIG.ui.defaultSort || "newest";
 
   // DOM Elements
   const channelAvatar = document.getElementById("channel-avatar");
@@ -314,8 +298,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 앱 시작
   try {
     trackPageView();
+
+    // 설정과 상품을 같이 받아온다. 설정을 기다렸다 그리는 건 기본 채널명이
+    // 잠깐 보였다가 바뀌는 깜빡임을 없애기 위해서다. 병렬이라 왕복은 한 번이다.
+    const [sheetSettings, products] = await Promise.all([
+      dataSource.fetchSettings(),
+      dataSource.fetchProducts()
+    ]);
+
+    activeConfig = InfolinkSettings.resolve(CONFIG, sheetSettings);
+    currentSort = activeConfig.ui.defaultSort || "newest";
+
     initProfile();
-    allProducts = await dataSource.fetchProducts();
+    allProducts = products;
     renderProducts();
     checkUrlDeepLink();
   } catch (err) {

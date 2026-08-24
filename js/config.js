@@ -4,6 +4,8 @@
  */
 const CONFIG = {
   // 1. 채널 프로필 정보
+  //    시트의 settings 탭이 읽히면 그 값이 이깁니다. 여기 값은 시트를 못 읽었을 때
+  //    쓰이는 폴백입니다. (settingsCsvUrl 이 비어 있으면 여기 값이 그대로 쓰입니다)
   channel: {
     name: "살림알파",
     handle: "@salim_alpha",
@@ -22,6 +24,7 @@ const CONFIG = {
   },
 
   // 2. 관리자 보안 설정 (대시보드 접속 PIN 번호)
+  //    PIN 은 시트에 두지 않는다. 게시 CSV 는 공개라서 그대로 노출되기 때문이다.
   admin: {
     pin: "7788" // 원하는 관리자 비밀번호 (변경 가능)
   },
@@ -30,6 +33,13 @@ const CONFIG = {
   dataSource: {
     mode: "google_sheets", 
     googleSheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQpvXQdFacfYtXR2MEsZ5eIVdsx0rtwOIX5SJzps_61qnkaRSxE85Q_IWj4grLlBLPbDCcaQL7cdm97/pub?gid=0&single=true&output=csv",
+
+    // 채널 설정(이름/사진/소개글/SNS)이 담긴 'settings' 탭의 게시 CSV 주소.
+    // 위 상품 주소에서 gid 만 설정 탭의 값으로 바꾼 것이다.
+    // gid 는 Apps Script 편집기에서 설정시트준비() 를 실행하면 로그에 찍힌다.
+    // 비워두면 아래 channel 기본값만 쓰인다.
+    settingsCsvUrl: "",
+
     apiEndpointUrl: ""
   },
 

@@ -41,6 +41,18 @@ var DEFAULT_SHEET_NAME = 'Sheet1';
 // (사이트 검색창 안내문이 "영상 번호(예: 014)" 라서 3자리에 맞춘다)
 var NUMBER_PAD = 3;
 
+// 채널 설정(이름/사진/소개글/SNS)이 들어가는 탭 이름. key | value 2열이다.
+// 상품 탭과 달리 여기는 '없으면 첫 번째 탭' 폴백을 쓰지 않는다 — 설정을 상품
+// 시트에 덮어쓰는 사고가 나기 때문이다. 없으면 만들거나 에러를 낸다.
+var SETTINGS_SHEET_NAME = 'settings';
+
+// 설정 탭에서 읽고 쓰는 키 목록. 여기 없는 키는 무시한다.
+// 관리자 PIN 은 일부러 뺐다 — 게시 CSV 는 공개라서 시트에 두면 그대로 노출된다.
+var SETTINGS_KEYS = [
+  'channel_name', 'channel_handle', 'tagline', 'avatar_url', 'business_email',
+  'sns_tiktok', 'sns_instagram', 'sns_threads', 'sns_youtube', 'top_notice'
+];
+
 
 /* ===================== 진입점 ===================== */
 
@@ -60,9 +72,11 @@ function doPost(e) {
     }
 
     var action = body.action || 'append';
-    if (action === 'ping')   return _json({ ok: true, action: 'ping' });
-    if (action === 'list')   return _json(_list(body));
-    if (action === 'append') return _json(_append(body));
+    if (action === 'ping')         return _json({ ok: true, action: 'ping' });
+    if (action === 'list')         return _json(_list(body));
+    if (action === 'append')       return _json(_append(body));
+    if (action === 'getSettings')  return _json(_getSettings());
+    if (action === 'saveSettings') return _json(_saveSettings(body));
 
     return _json({ ok: false, error: '알 수 없는 action: ' + action });
   } catch (err) {
@@ -134,6 +148,79 @@ function _list(body) {
 }
 
 
+/**
+ * 설정 읽기. 사이트는 평소 게시 CSV 로 읽지만(구글 CDN 이 트래픽을 받아준다),
+ * 관리자 화면은 저장 직후 확인이 필요해서 캐시 없는 이쪽을 쓴다.
+ */
+function _getSettings() {
+  var sheet = _settingsSheet(false);
+  if (!sheet) {
+    return { ok: false, error: "'" + SETTINGS_SHEET_NAME + "' 탭이 없습니다. 편집기에서 설정시트준비() 를 한 번 실행해 주세요." };
+  }
+
+  var last = sheet.getLastRow();
+  var settings = {};
+  if (last >= 2) {
+    var rows = sheet.getRange(2, 1, last - 1, 2).getValues();
+    rows.forEach(function (r) {
+      var key = String(r[0] || '').trim();
+      if (key) settings[key] = String(r[1] === null || r[1] === undefined ? '' : r[1]);
+    });
+  }
+
+  return { ok: true, settings: settings, sheet: sheet.getName(), gid: sheet.getSheetId() };
+}
+
+/**
+ * 설정 쓰기. 보내온 키만 갱신하고 나머지 행은 그대로 둔다.
+ * 없는 키는 새 행으로 추가하되, SETTINGS_KEYS 에 없는 키는 버린다.
+ */
+function _saveSettings(body) {
+  var incoming = body.settings || {};
+  var lock = LockService.getScriptLock();
+
+  lock.waitLock(30000);
+  try {
+    var sheet = _settingsSheet(true);
+    var last = sheet.getLastRow();
+
+    // 기존 key -> 행번호
+    var rowOf = {};
+    if (last >= 2) {
+      var keys = sheet.getRange(2, 1, last - 1, 1).getValues();
+      for (var i = 0; i < keys.length; i++) {
+        var k = String(keys[i][0] || '').trim();
+        if (k && !rowOf.hasOwnProperty(k)) rowOf[k] = i + 2;
+      }
+    }
+
+    var saved = [];
+    var skipped = [];
+    Object.keys(incoming).forEach(function (key) {
+      if (SETTINGS_KEYS.indexOf(key) === -1) { skipped.push(key); return; }
+      var value = incoming[key] === null || incoming[key] === undefined ? '' : String(incoming[key]);
+      if (rowOf.hasOwnProperty(key)) {
+        sheet.getRange(rowOf[key], 2).setValue(value);
+      } else {
+        sheet.appendRow([key, value]);
+        rowOf[key] = sheet.getLastRow();
+      }
+      saved.push(key);
+    });
+
+    return {
+      ok: true,
+      saved: saved,
+      skipped: skipped,
+      gid: sheet.getSheetId(),
+      note: '게시 CSV 는 수 분간 캐시됩니다. 방문자 화면 반영에 시간이 걸릴 수 있습니다.'
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+
 /* ===================== 헬퍼 ===================== */
 
 function _sheet(name) {
@@ -158,6 +245,30 @@ function _sheet(name) {
     sheet = ss.getSheets()[0];
     if (!sheet) throw new Error('시트를 찾을 수 없습니다: ' + target);
   }
+  return sheet;
+}
+
+/**
+ * 설정 탭을 엄격하게 찾는다. _sheet() 와 달리 '못 찾으면 첫 번째 탭' 폴백이 없다 —
+ * 그 폴백이 여기 적용되면 상품 시트 1행부터 설정을 덮어쓰게 된다.
+ */
+function _settingsSheet(createIfMissing) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) {
+    throw new Error(
+      '이 스크립트가 스프레드시트에 연결돼 있지 않습니다. ' +
+      '시트를 연 뒤 [확장 프로그램 → Apps Script] 로 열어주세요.');
+  }
+
+  var sheet = ss.getSheetByName(SETTINGS_SHEET_NAME);
+  if (sheet) return sheet;
+  if (!createIfMissing) return null;
+
+  sheet = ss.insertSheet(SETTINGS_SHEET_NAME);
+  sheet.getRange(1, 1, 1, 2).setValues([['key', 'value']]);
+  sheet.setFrozenRows(1);
+  sheet.setColumnWidth(1, 180);
+  sheet.setColumnWidth(2, 420);
   return sheet;
 }
 
@@ -289,4 +400,41 @@ function 설치확인() {
   if (!map.hasOwnProperty('source_id')) {
     Logger.log("참고: 'source_id' 헤더가 없습니다. 있으면 같은 영상 중복 등록을 막아줍니다.");
   }
+}
+
+
+/**
+ * 설정 탭을 만들고 키를 채워 넣는다. 편집기에서 한 번만 실행하면 된다.
+ * 실행 로그에 gid 와 config.js 에 넣을 CSV 주소가 찍힌다.
+ */
+function 설정시트준비() {
+  var sheet = _settingsSheet(true);
+
+  var existing = {};
+  var last = sheet.getLastRow();
+  if (last >= 2) {
+    sheet.getRange(2, 1, last - 1, 1).getValues().forEach(function (r) {
+      var k = String(r[0] || '').trim();
+      if (k) existing[k] = true;
+    });
+  }
+
+  // 이미 있는 키는 건드리지 않는다. 값이 지워지면 안 되기 때문이다.
+  var added = [];
+  SETTINGS_KEYS.forEach(function (key) {
+    if (!existing[key]) {
+      sheet.appendRow([key, '']);
+      added.push(key);
+    }
+  });
+
+  Logger.log("탭 이름: " + sheet.getName());
+  Logger.log("gid: " + String(sheet.getSheetId()));
+  Logger.log("새로 추가한 키: " + (added.length ? added.join(', ') : '없음 (이미 준비돼 있음)'));
+  Logger.log('');
+  Logger.log('--- 다음 할 일 ---');
+  Logger.log('1) 이 탭의 value 열에 채널명/사진주소 등을 채운다');
+  Logger.log('2) [파일 → 공유 → 웹에 게시] 에서 "전체 문서" 로 게시한다');
+  Logger.log('3) 상품용 CSV 주소의 gid=0 을 gid=' + String(sheet.getSheetId()) + ' 로 바꾼 주소를');
+  Logger.log('   js/config.js 의 settingsCsvUrl 에 넣는다');
 }

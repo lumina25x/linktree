@@ -119,6 +119,8 @@ Apps Script 는 **저장만으로는 웹앱에 반영되지 않는다.**
 | `ping` | `{token, action:"ping"}` | `{ok:true}` |
 | `list` | `{token, action:"list"}` | `{ok:true, count, items:[...]}` |
 | `append` | `{token, action:"append", product:{...}}` | `{ok:true, id, number_badge, title, row, duplicate}` |
+| `getSettings` | `{token, action:"getSettings"}` | `{ok:true, settings:{...}, gid}` |
+| `saveSettings` | `{token, action:"saveSettings", settings:{...}}` | `{ok:true, saved:[...], skipped:[...]}` |
 
 `product` 에 넣을 수 있는 키 — 시트 헤더에 같은 이름이 있을 때만 쓰인다:
 
@@ -131,3 +133,59 @@ source_id, source_url, video_path
 `id` / `number_badge` / `title` 의 번호 접두사(`014. `)는 **서버가 정한다.**
 클라이언트가 계산하면 안 되는 이유는 [`Code.gs`](Code.gs) 맨 위 주석에 적어뒀다
 (게시 CSV 캐시 때문에 번호가 겹친다).
+
+---
+
+## 채널 설정(settings 탭) 연동
+
+채널명·프로필 사진·소개글·SNS 주소를 **모든 방문자에게** 반영하려면 시트에 둬야 한다.
+관리자 페이지의 저장 버튼이 이 엔드포인트로 POST 한다.
+
+> 예전에는 이 값들이 브라우저 `localStorage` 에만 저장돼서, 설정을 바꿔도
+> 방문자 화면은 그대로였고 브라우저가 저장소를 비우면 원래대로 돌아갔다.
+
+### 1. 설정 탭 만들기
+
+Apps Script 편집기에서 함수 선택 상자에서 **`설정시트준비`** 를 골라 ▶ 실행한다.
+`settings` 탭이 생기고 키가 채워지며, 실행 로그에 **gid** 가 찍힌다.
+
+| key | 쓰임 |
+|---|---|
+| `channel_name` | 채널 이름 |
+| `channel_handle` | 핸들 (`@myid`) |
+| `tagline` | 한 줄 소개 |
+| `avatar_url` | 프로필 이미지 주소 |
+| `business_email` | 비즈니스 문의 메일 |
+| `sns_tiktok` / `sns_instagram` / `sns_threads` / `sns_youtube` | SNS 주소 |
+| `top_notice` | 상단 공정위 문구 |
+
+**관리자 PIN 은 여기 두지 않는다.** 게시 CSV 는 공개라서 그대로 노출된다. PIN 은
+`js/config.js` 에 남긴다.
+
+### 2. 웹에 게시 (전체 문서로)
+
+`[파일 → 공유 → 웹에 게시]` 에서 **전체 문서**를 CSV 로 게시한다.
+상품 탭만 게시돼 있으면 설정 탭 주소가 404 가 된다.
+
+### 3. config.js 에 주소 넣기
+
+상품용 CSV 주소에서 `gid` 만 설정 탭의 gid 로 바꿔 `js/config.js` 의
+`settingsCsvUrl` 에 넣는다.
+
+```javascript
+googleSheetCsvUrl: ".../pub?gid=0&single=true&output=csv",        // 상품
+settingsCsvUrl:    ".../pub?gid=1234567&single=true&output=csv",  // 설정
+```
+
+### 4. 관리자 페이지에 연동 정보 입력
+
+관리자 페이지 → 설정 탭 → **🔗 시트 저장 연동** 에 웹앱 URL 과 토큰을 넣는다.
+이 두 값은 **그 브라우저에만** 저장되고 사이트 소스에는 들어가지 않는다.
+기기를 바꾸면 다시 입력해야 한다.
+
+### 반영까지 걸리는 시간
+
+게시 CSV 는 수 분간 캐시된다. 저장 직후 방문자 화면은 아직 옛 값이다.
+관리자 본인 화면은 그동안 `localStorage` 미리보기로 새 값을 보여주고,
+**10분이 지나면 미리보기를 버리고 시트 값을 따른다** — 시트를 직접 고쳤을 때
+그 브라우저만 옛 값을 계속 보는 일을 막기 위해서다.

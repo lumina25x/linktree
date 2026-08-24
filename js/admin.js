@@ -2,31 +2,44 @@
  * [Infolink Admin Analytics & Settings Logic]
  * 1. PIN 보안 인증
  * 2. 통계 대시보드 (KPI, 상품별 클릭 랭킹, 유입 채널)
- * 3. 채널 프로필, 문구, SNS 링크, 비즈니스 이메일, PIN 설정 관리
+ * 3. 채널 프로필/문구/SNS 설정 — 구글 시트의 settings 탭에 저장한다
+ *
+ * 설정 우선순위는 js/settings.js 참고.
+ * 저장은 Apps Script 웹앱으로 POST 한다. 그래야 모든 방문자에게 반영된다.
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // Config Manager Helper: localStorage 우선 로드
-  function getEffectiveConfig() {
-    const custom = localStorage.getItem("infolink_custom_config");
-    if (custom) {
-      try {
-        const parsed = JSON.parse(custom);
-        return {
-          ...CONFIG,
-          ...parsed,
-          channel: { ...CONFIG.channel, ...(parsed.channel || {}) },
-          admin: { ...CONFIG.admin, ...(parsed.admin || {}) },
-          dataSource: { ...CONFIG.dataSource, ...(parsed.dataSource || {}) },
-          ui: { ...CONFIG.ui, ...(parsed.ui || {}) }
-        };
-      } catch (e) {}
+  // Apps Script 접속 정보는 이 브라우저에만 둔다. 소스에 박으면 공개 저장소와
+  // 배포된 사이트에 토큰이 그대로 노출돼 누구나 시트에 쓸 수 있게 된다.
+  const ENDPOINT_KEY = "infolink_endpoint";
+
+  function readEndpoint() {
+    try {
+      const raw = localStorage.getItem(ENDPOINT_KEY);
+      if (!raw) return { url: "", token: "" };
+      const parsed = JSON.parse(raw);
+      return { url: parsed.url || "", token: parsed.token || "" };
+    } catch (e) {
+      return { url: "", token: "" };
     }
-    return CONFIG;
   }
 
-  let activeConfig = getEffectiveConfig();
-  const dataSource = new DataSourceManager(activeConfig);
+  function writeEndpoint(endpoint) {
+    try {
+      localStorage.setItem(ENDPOINT_KEY, JSON.stringify(endpoint));
+    } catch (e) {
+      console.warn("연동 정보 저장 실패:", e);
+    }
+  }
+
+  let activeConfig = CONFIG;
+  let sheetSettings = null;
+  const dataSource = new DataSourceManager(CONFIG);
+
+  async function refreshConfig() {
+    sheetSettings = await dataSource.fetchSettings();
+    activeConfig = InfolinkSettings.resolve(CONFIG, sheetSettings);
+  }
 
   // Auth Elements
   const pinModal = document.getElementById("pin-modal");
@@ -71,8 +84,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const settingSocialInstagram = document.getElementById("setting-social-instagram");
   const settingSocialThreads = document.getElementById("setting-social-threads");
   const settingSocialYoutube = document.getElementById("setting-social-youtube");
-  const settingSheetUrl = document.getElementById("setting-sheet-url");
-  const settingAdminPin = document.getElementById("setting-admin-pin");
+  const settingEndpointUrl = document.getElementById("setting-endpoint-url");
+  const settingEndpointToken = document.getElementById("setting-endpoint-token");
+  const btnSaveSettings = document.getElementById("btn-save-settings");
 
   // 0. 채널명 반영: 탭 제목과 대시보드 상단 제목이 설정을 따라간다
   function applyBranding() {
@@ -150,12 +164,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // 3. 설정 폼 데이터 채우기
   function populateSettingsForm() {
-    activeConfig = getEffectiveConfig();
     const ch = activeConfig.channel || {};
     const socials = ch.socials || {};
     const ui = activeConfig.ui || {};
-    const ds = activeConfig.dataSource || {};
-    const admin = activeConfig.admin || {};
 
     settingChannelName.value = ch.name || "";
     settingChannelHandle.value = ch.handle || "";
@@ -169,50 +180,80 @@ document.addEventListener("DOMContentLoaded", async () => {
     settingSocialThreads.value = socials.threads || "";
     settingSocialYoutube.value = socials.youtube || "";
 
-    settingSheetUrl.value = ds.googleSheetCsvUrl || "";
-    settingAdminPin.value = admin.pin || "7788";
+    const endpoint = readEndpoint();
+    settingEndpointUrl.value = endpoint.url;
+    settingEndpointToken.value = endpoint.token;
   }
 
-  // 4. 설정 폼 저장
-  settingsForm.addEventListener("submit", (e) => {
+  // 4. 설정 폼 저장 — 구글 시트에 쓴다
+  settingsForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const updated = {
-      channel: {
-        name: settingChannelName.value.trim(),
-        handle: settingChannelHandle.value.trim(),
-        tagline: settingChannelTagline.value.trim(),
-        avatar: settingChannelAvatar.value.trim() || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
-        badge: "공식 파트너스",
-        businessEmail: settingBusinessEmail.value.trim(),
-        socials: {
-          tiktok: settingSocialTiktok.value.trim(),
-          instagram: settingSocialInstagram.value.trim(),
-          threads: settingSocialThreads.value.trim(),
-          youtube: settingSocialYoutube.value.trim()
-        }
-      },
-      admin: {
-        pin: settingAdminPin.value.trim() || "7788"
-      },
-      dataSource: {
-        mode: "google_sheets",
-        googleSheetCsvUrl: settingSheetUrl.value.trim()
-      },
-      ui: {
-        theme: "light",
-        defaultSort: "newest",
-        searchPlaceholder: "🔍 영상 번호(예: 014) 또는 상품명 검색",
-        topNoticeText: settingTopNotice.value.trim()
-      }
+    // 연동 정보는 저장이 실패하더라도 남겨둔다. 매번 다시 입력하게 하면 안 된다.
+    const endpoint = {
+      url: settingEndpointUrl.value.trim(),
+      token: settingEndpointToken.value.trim()
+    };
+    writeEndpoint(endpoint);
+
+    if (!endpoint.url || !endpoint.token) {
+      showToast("⚠️ Apps Script 웹앱 URL 과 쓰기 토큰을 먼저 입력해 주세요.");
+      return;
+    }
+
+    // 빈 칸은 빈 값 그대로 보낸다. 예전처럼 기본 이미지 주소로 바꿔치기하면
+    // 이름만 고치고 저장했을 때 사진이 멋대로 되돌아간다.
+    const settings = {
+      channel_name: settingChannelName.value.trim(),
+      channel_handle: settingChannelHandle.value.trim(),
+      tagline: settingChannelTagline.value.trim(),
+      avatar_url: settingChannelAvatar.value.trim(),
+      business_email: settingBusinessEmail.value.trim(),
+      sns_tiktok: settingSocialTiktok.value.trim(),
+      sns_instagram: settingSocialInstagram.value.trim(),
+      sns_threads: settingSocialThreads.value.trim(),
+      sns_youtube: settingSocialYoutube.value.trim(),
+      top_notice: settingTopNotice.value.trim()
     };
 
-    localStorage.setItem("infolink_custom_config", JSON.stringify(updated));
-    activeConfig = getEffectiveConfig();
-    applyBranding();
+    setSaving(true);
+    try {
+      const response = await fetch(endpoint.url, {
+        method: "POST",
+        // text/plain 이라야 브라우저가 프리플라이트(OPTIONS)를 보내지 않는다.
+        // Apps Script 웹앱은 OPTIONS 를 처리하지 못해서 application/json 으로
+        // 보내면 CORS 단계에서 막힌다. 본문은 그대로 JSON 으로 파싱된다.
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ token: endpoint.token, action: "saveSettings", settings })
+      });
 
-    showToast("💾 설정이 성공적으로 저장되었습니다! 메인 사이트에 즉시 반영됩니다.");
+      if (!response.ok) throw new Error(`서버 응답 ${response.status}`);
+
+      const data = await response.json();
+      if (!data.ok) throw new Error(data.error || "알 수 없는 오류");
+
+      // 게시 CSV 는 수 분간 캐시돼서 방금 쓴 값을 아직 못 읽는다.
+      // 그 사이 관리자 화면이 옛 값으로 보이지 않도록 미리보기를 남긴다.
+      InfolinkSettings.writePreview(dataSource.settingsToConfig(settings) || {});
+      activeConfig = InfolinkSettings.resolve(CONFIG, sheetSettings);
+      applyBranding();
+
+      showToast("💾 시트에 저장했습니다. 방문자 화면에는 몇 분 뒤 반영됩니다.");
+    } catch (err) {
+      console.error("설정 저장 실패:", err);
+      showToast("⚠️ 저장 실패: " + err.message);
+    } finally {
+      setSaving(false);
+    }
   });
+
+  function setSaving(isSaving) {
+    if (!btnSaveSettings) return;
+    btnSaveSettings.disabled = isSaving;
+    btnSaveSettings.innerHTML = isSaving
+      ? "<span>저장 중…</span>"
+      : "<span>💾 구글 시트에 저장하기</span>";
+  }
 
   // 5. 통계 대시보드 렌더링
   function getStatsData() {
@@ -362,6 +403,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
+  await refreshConfig();
   applyBranding();
   checkAuth();
 });

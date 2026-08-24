@@ -600,28 +600,40 @@
           </div>
         </section>
 
-        <!-- 3. 구글 시트 및 보안 PIN 설정 -->
+        <!-- 3. 시트 저장 연동 (Apps Script) -->
         <section class="admin-card">
           <div class="admin-card-title" style="margin-bottom: 16px;">
-            <span>🔐 데이터 및 보안 설정</span>
+            <span>🔗 시트 저장 연동</span>
+          </div>
+
+          <div class="form-subtext" style="margin-bottom: 16px; line-height: 1.6;">
+            위 설정을 구글 시트에 저장하려면 아래 두 값이 필요합니다.
+            이 두 값은 <strong>이 브라우저에만</strong> 저장되며 사이트 소스에는 들어가지 않습니다.
+            토큰이 유출되면 누구나 시트에 쓸 수 있으니 공용 PC에서는 입력하지 마세요.
+            기기를 바꾸면 다시 입력해야 합니다.
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="setting-sheet-url">📊 구글 스프레드시트 CSV 웹 게시 URL</label>
-            <input type="url" id="setting-sheet-url" class="form-input" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" />
+            <label class="form-label" for="setting-endpoint-url">Apps Script 웹앱 URL</label>
+            <input type="url" id="setting-endpoint-url" class="form-input" placeholder="https://script.google.com/macros/s/.../exec" />
           </div>
 
-          <div class="form-group" style="max-width: 260px;">
-            <label class="form-label" for="setting-admin-pin">🔒 관리자 접속 PIN 비밀번호</label>
-            <div class="form-subtext">대시보드 잠금 해제에 사용할 번호</div>
-            <input type="text" id="setting-admin-pin" class="form-input" maxlength="8" placeholder="예: 7788" required />
+          <div class="form-group">
+            <label class="form-label" for="setting-endpoint-token">쓰기 토큰</label>
+            <div class="form-subtext">Code.gs 의 TOKEN 값 (또는 스크립트 속성 INFOLINK_TOKEN)</div>
+            <input type="password" id="setting-endpoint-token" class="form-input" placeholder="설치할 때 정한 긴 문자열" autocomplete="off" />
+          </div>
+
+          <div class="form-subtext" style="margin-top: 16px; line-height: 1.6;">
+            🔒 관리자 PIN 과 📊 상품 시트 CSV 주소는 <strong>js/config.js</strong> 에서 바꿉니다.
+            PIN 을 시트에 두면 공개 CSV 로 그대로 노출되기 때문입니다.
           </div>
         </section>
 
         <!-- 저장 버튼 -->
         <div style="margin-top: 20px; display: flex; gap: 12px;">
-          <button type="submit" class="btn-save-settings">
-            <span>💾 설정 저장하기 (사이트에 즉시 적용)</span>
+          <button type="submit" id="btn-save-settings" class="btn-save-settings">
+            <span>💾 구글 시트에 저장하기</span>
           </button>
         </div>
       </form>
@@ -634,6 +646,7 @@
 
   <!-- Scripts -->
   <script src="js/config.js"></script>
+  <script src="js/settings.js"></script>
   <script src="js/data-source.js"></script>
   <script src="js/admin.js"></script>
 </body>
